@@ -22,78 +22,78 @@ peers.on("connection", (socket) => {
   //step 2 : handling request 'getRouterRtpCapabilties' from client
   socket.on("getRouterRtpCapabilities", () => {
     const routerRtpCapabilities = {
-      "codecs": [
+  "codecs": [
+    {
+      "mimeType": "audio/opus",
+      "payloadType": 111,
+      "clockRate": 48000,
+      "channels": 2,
+      "parameters": {
+        "useinbandfec": 1
+      },
+      "rtcpFeedback": [
         {
-          "mimeType": "audio/opus",
-          "payloadType": 111,
-          "clockRate": 48000,
-          "channels": 2,
-          "parameters": {
-            "useinbandfec": 1
-          },
-          "rtcpFeedback": [
-            {
-              "type": "nack"
-            },
-            {
-              "type": "nack",
-              "parameter": "pli"
-            }
-          ]
+          "type": "nack"
         },
         {
-          "mimeType": "video/vp8",
-          "payloadType": 100,
-          "clockRate": 90000,
-          "parameters": {},
-          "rtcpFeedback": [
-            {
-              "type": "nack"
-            },
-            {
-              "type": "nack",
-              "parameter": "pli"
-            },
-            {
-              "type": "goog-remb"
-            }
-          ]
-        },
-        {
-          "mimeType": "video/h264",
-          "payloadType": 102,
-          "clockRate": 90000,
-          "parameters": {
-            "packetization-mode": 1,
-            "profile-level-id": "42e01f"
-          },
-          "rtcpFeedback": [
-            {
-              "type": "nack"
-            },
-            {
-              "type": "nack",
-              "parameter": "pli"
-            },
-            {
-              "type": "goog-remb"
-            }
-          ]
+          "type": "nack",
+          "parameter": "pli"
         }
-      ],
-      "headerExtensions": [
+      ]
+    },
+    {
+      "mimeType": "video/vp8",
+      "payloadType": 100,
+      "clockRate": 90000,
+      "parameters": {},
+      "rtcpFeedback": [
         {
-          "uri": "urn:ietf:params:rtp-hdrext:sdes:mid",
-          "id": 1
+          "type": "nack"
         },
         {
-          "uri": "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id",
-          "id": 2
+          "type": "nack",
+          "parameter": "pli"
+        },
+        {
+          "type": "goog-remb"
         }
-      ],
-      "fecMechanisms": ["RED+ULPFEC"]
+      ]
+    },
+    {
+      "mimeType": "video/h264",
+      "payloadType": 102,
+      "clockRate": 90000,
+      "parameters": {
+        "packetization-mode": 1,
+        "profile-level-id": "42e01f"
+      },
+      "rtcpFeedback": [
+        {
+          "type": "nack"
+        },
+        {
+          "type": "nack",
+          "parameter": "pli"
+        },
+        {
+          "type": "goog-remb"
+        }
+      ]
     }
-    
+  ],
+  "headerExtensions": [
+    {
+      "uri": "urn:ietf:params:rtp-hdrext:sdes:mid",
+      "id": 1
+    },
+    {
+      "uri": "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id",
+      "id": 2
+    }
+  ],
+  "fecMechanisms": ["RED+ULPFEC"]
+};
+
 
     //sending the routerRtpCapabilities to client
     socket.emit("routerRtpCapabilities",routerRtpCapabilities);
