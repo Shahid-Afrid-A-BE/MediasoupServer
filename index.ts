@@ -1,7 +1,7 @@
 import http from "http"; // HTTP module
 import { Server } from "socket.io"; // WebSocket server
 
-// Initialize HTTP server
+// Initialize HTTP server.....
 const server = http.createServer();
 
 // Initialize WebSocket server
