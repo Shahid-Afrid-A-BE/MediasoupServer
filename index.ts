@@ -1,5 +1,12 @@
 import http from "http"; // HTTP module
 import { Server } from "socket.io"; // WebSocket server
+import { types as mediasoupTypes, createWorker } from "mediasoup";
+
+
+
+
+let worker: mediasoupTypes.Worker;
+let router: mediasoupTypes.Router;
 
 // Initialize HTTP server.....
 const server = http.createServer();
@@ -17,90 +24,19 @@ const peers = io.of("/mediasoup");
 //step 1.2 :  Handle peer connection and events
 peers.on("connection", (socket) => {
   console.log(`New peer connected: ${socket.id}`);
-
-
-  //step 2 : handling request 'getRouterRtpCapabilties' from client
-  socket.on("getRouterRtpCapabilities", () => {
-    const routerRtpCapabilities = {
-  "codecs": [
-    {
-      "mimeType": "audio/opus",
-      "payloadType": 111,
-      "clockRate": 48000,
-      "channels": 2,
-      "parameters": {
-        "useinbandfec": 1
-      },
-      "rtcpFeedback": [
-        {
-          "type": "nack"
-        },
-        {
-          "type": "nack",
-          "parameter": "pli"
-        }
-      ]
-    },
-    {
-      "mimeType": "video/vp8",
-      "payloadType": 100,
-      "clockRate": 90000,
-      "parameters": {},
-      "rtcpFeedback": [
-        {
-          "type": "nack"
-        },
-        {
-          "type": "nack",
-          "parameter": "pli"
-        },
-        {
-          "type": "goog-remb"
-        }
-      ]
-    },
-    {
-      "mimeType": "video/h264",
-      "payloadType": 102,
-      "clockRate": 90000,
-      "parameters": {
-        "packetization-mode": 1,
-        "profile-level-id": "42e01f"
-      },
-      "rtcpFeedback": [
-        {
-          "type": "nack"
-        },
-        {
-          "type": "nack",
-          "parameter": "pli"
-        },
-        {
-          "type": "goog-remb"
-        }
-      ]
+  
+  socket.on("getRouterRtpCapabilities", async () => {
+    if (!router) {
+      await createWorkerRouter(); // Ensure router is initialized
     }
-  ],
-  "headerExtensions": [
-    {
-      "uri": "urn:ietf:params:rtp-hdrext:sdes:mid",
-      "id": 1
-    },
-    {
-      "uri": "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id",
-      "id": 2
-    }
-  ],
-  "fecMechanisms": ["RED+ULPFEC"]
-};
 
 
-    //sending the routerRtpCapabilities to client
-    socket.emit("routerRtpCapabilities",routerRtpCapabilities);
+    //send routerRTpCapabilities to client
+    //@consider erros occure: emit() is used for broadcast not private signal message 
+    socket.emit("routerRtpCapabilities",router.rtpCapabilities);
 
   });
 
-  
   // Handle 'sendMessage' event from client
   socket.on("sendMessage", (message) => {
     console.log(`Message from ${socket.id}: ${message}`);
@@ -112,7 +48,25 @@ peers.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log(`Peer disconnected: ${socket.id}`);
   });
+
+
 });
+
+
+async function createWorkerRouter()
+{
+  worker = await createWorker();
+
+   const mediaCodecs: mediasoupTypes.RtpCodecCapability[] = [
+    { kind: "audio", mimeType: "audio/opus", clockRate: 48000, channels: 2 },
+    { kind: "video", mimeType: "video/VP8", clockRate: 90000 },
+  ];
+
+  router = await worker.createRouter({ mediaCodecs });
+
+  console.log("Worker and Router Created");
+}
+
 
 // Start the server
 const port = 3001;
